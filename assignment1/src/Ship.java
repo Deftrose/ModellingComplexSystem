@@ -20,7 +20,7 @@ public class Ship {
     // create a new vessel with a given identifier
     private Ship(int id) {
         this.id = id;
-        this.loaded = true;
+        this.loaded = 1;
     }
 
     // get a new Ship instance with a unique identifier
