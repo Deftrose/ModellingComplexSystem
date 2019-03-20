@@ -1,6 +1,7 @@
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 /**
  * A bounded buffer maintains a fixed number of "slots". Items can be
@@ -10,6 +11,9 @@ import java.util.Random;
 
 class BoundedBuffer
 {
+
+  private Semaphore notFull ;
+  private Semaphore notEmpty;
   // the maximum size of the bounded buffer
   final public static int MAXSIZE = 10;
 
@@ -19,6 +23,8 @@ class BoundedBuffer
   public BoundedBuffer()
   {
     buffer = new ArrayList<Integer>();
+    notEmpty = new Semaphore(0);
+    notFull = new Semaphore(MAXSIZE);
   }
 
   // add an element to the end of the buffer if it is not full
@@ -33,7 +39,6 @@ class BoundedBuffer
       try{
         wait();
       } catch (InterruptedException e ){
-
       }
     }
   }

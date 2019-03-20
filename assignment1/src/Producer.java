@@ -23,6 +23,7 @@ public class Producer extends Thread {
             try {
                 // create a new cargo ship and send it to the arrival zone.
                 Ship ship = Ship.getNewShip();
+                // let the new ship arrive in the Waitzone
                 arrivalZone.arrive(ship);
                 // let some time pass before the next ship arrives
                 sleep(Params.arrivalLapse());

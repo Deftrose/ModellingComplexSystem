@@ -13,6 +13,7 @@ public class Pilot extends Thread{
     private Tugs tugs;
     private Berth berth;
 
+    // the ship which this pilot is operating on
     private Ship ship;
 
     public Pilot(int pilotID, WaitZone arriveZone, WaitZone departureZone, Tugs tugs, Berth berth){
