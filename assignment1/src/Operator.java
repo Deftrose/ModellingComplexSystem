@@ -9,6 +9,6 @@ public class Operator extends Thread {
     }
 
     public void run(){
-        System.out.println("the run of Operator");
+
     }
 }

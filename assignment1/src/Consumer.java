@@ -21,7 +21,6 @@ public class Consumer extends Thread {
             try {
                 // remove a vessel that is in the departure wait zone
                 departureZone.depart();
-                System.out.println("consumer");
                 // let some time pass before the next departure
                 sleep(Params.departureLapse());
             }

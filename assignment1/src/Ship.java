@@ -18,7 +18,7 @@ public class Ship {
     int loaded;
 
     // create a new vessel with a given identifier
-    private Ship(int id) {
+    public Ship(int id) {
         this.id = id;
         this.loaded = 1;
     }
