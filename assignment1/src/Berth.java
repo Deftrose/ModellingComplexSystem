@@ -7,9 +7,13 @@ public class Berth {
     //  indicates whether the berth is been used
     private boolean beingUsed;
 
+    // is the shield activated
+    private boolean isActivated;
+
     public Berth(String berthId){
         this.berthId = berthId;
         this.beingUsed = false;
+        this.isActivated = false;
     }
 
     //  try to unload the ship
@@ -32,6 +36,29 @@ public class Berth {
     public synchronized void finishUnLoading(){
         this.beingUsed = false;
         notify();
+    }
+
+    //  Check the state of berth shield, if the shield is activated, the ship need to wait
+    public synchronized void checkShield(){
+        while(isActivated){
+            try {
+                wait();
+            } catch(InterruptedException e ){
+            }
+        }
+    }
+
+    //  The operator use the shield controller to switch the shield on or off
+    public synchronized void shieldControllerOn(){
+        isActivated = true;
+        notify();
+        System.out.println("Shield is activated");
+    }
+
+    public synchronized void shieldControllerOff(){
+        isActivated = false;
+        notify();
+        System.out.println("Shield is deactivated");
     }
 
 }

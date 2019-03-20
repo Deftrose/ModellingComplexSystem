@@ -35,6 +35,12 @@ public class Pilot extends Thread{
                 System.out.println("Pilot "+pilotID+" acquires "+ship.toString());
                 tugs.acquireTug(Params.DOCKING_TUGS);
                 System.out.println("Pilot "+pilotID+" acquires "+Params.DOCKING_TUGS +" tugs");
+
+                //  Go from waitzone to the berth
+                sleep(Params.TRAVEL_TIME);
+
+                //  Before docking, the pilot need to check if the shield is on
+                berth.checkShield();
                 sleep(Params.DOCKING_TIME);
                 tugs.returnTug(Params.DOCKING_TUGS);
                 System.out.println("Pilot "+pilotID+" releases "+Params.DOCKING_TUGS +" tugs");
@@ -46,9 +52,15 @@ public class Pilot extends Thread{
                 berth.finishUnLoading();
 
                 // After unloading, the ship will go to departure zone with 2 tugs then departs again
+                // Before undocking, the pilot need to check if the shield is on
+                berth.checkShield();
                 tugs.acquireTug(Params.UNDOCKING_TUGS);
                 System.out.println("Pilot "+pilotID+" acquires "+Params.UNDOCKING_TUGS +" tugs");
                 sleep(Params.UNDOCKING_TIME);
+
+                //  Go from the berth to depart waitzone
+                sleep(Params.TRAVEL_TIME);
+
                 tugs.returnTug(Params.UNDOCKING_TUGS);
                 System.out.println("Pilot "+pilotID+" releases "+Params.UNDOCKING_TUGS +" tugs");
                 departureZone.arrive(ship);
