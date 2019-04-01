@@ -1,0 +1,9 @@
+const N = 5
+range T = 1..5
+
+RESOURCE = ( acquire -> release -> RESOURCE ).
+USER = ( acquire -> use -> release -> USER ).
+
+//||NEW = ( a:USER || b:USER || a:RESOURCE || b:RESOURCE ).
+//||ONE = ( a:USER || b:USER || {a,b}::RESOURCE ).
+||N_VERSION = (c[T]:USER || {c[T]}::RESOURCE ).

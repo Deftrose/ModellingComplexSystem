@@ -1,0 +1,14 @@
+PHIL = ( tosit -> sitdown -> right.get -> left.get -> eat -> left.put -> right.put -> standup -> afterstandup -> PHIL ).
+
+FORK = ( get -> put -> FORK ).
+
+BUTLER ( I=4 ) = BUT[I],
+BUT[v: 0..4] = ( when ( v>0 ) tosit -> BUT[v-1] | when (v<4) afterstandup -> BUT[v+1] ).
+
+||DINERS( N= 5)
+= 
+((
+forall [i:0..N-1]
+	( phil[i]:PHIL
+	|| {phil[i].left,phil[((i-1)+N)%N].right }::FORK )
+)|| {phil[1],phil[2],phil[3],phil[4],phil[0]}::BUTLER(4)).
