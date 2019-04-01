@@ -1,0 +1,10 @@
+PILOT = ( get_ship -> get_tugs -> travel -> docking 
+		-> unload -> undocking -> travel -> return_tugs -> leave_ship -> PILOT ).
+
+PRODUCER = ( put -> PRODUCER ).
+CONSUMER = ( get -> CONSUMER ).
+
+TUGS = ( acquire -> release -> TUGS ).
+
+ARRIVE_ZONE = ( arrive -> ship_leave -> ARRIVE_ZONE).
+DEPART_ZONE = ( arrive -> ship_leave -> DEPART_ZONE).
