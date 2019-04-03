@@ -1,5 +1,5 @@
 /*
-constant properties for pilot numer, tug number, required tugs for docking, undocking
+constant properties for pilot numer, tug number, required tugs for docking, undocking 
 and the maximum space of wait zones.
 */
 const PIL_NUM = 2
@@ -7,16 +7,25 @@ const TUG_NUM = 5
 const TUG_DOCKING = 3
 const TUG_UNDOCKING = 2
 const WAIT_ZONE_MAX = 1
+const BERTH_MAX = 1
 
 range WAIT_ZONE_RANGE = 0..WAIT_ZONE_MAX
 
 // The pilot process
 PILOT = ( get_ship -> travel -> get_tugs_docking -> docking 
-		-> unload -> get_tugs_undocking -> undocking -> travel -> leave_ship -> PILOT ).
+		-> goto_berth -> get_tugs_undocking -> undocking -> travel -> leave_ship -> PILOT ).
 
 // The producer and consumer process, actions put and get mean the a new ship arrives or departure
 PRODUCER = ( put -> PRODUCER ).
 CONSUMER = ( get -> CONSUMER ).
+
+// The shiel process shows how the shield works under the operation of operator, 0 means the shield is deactivated,1 means the shield is activated
+SHIELD( N=0 ) = SHIELD[0],
+SHIELD[v:0..1] = ( when (v==0) activate -> SHIELD[1] | when (v==1) deactivate -> SHIELD[0] )/{activate/docking}. 
+
+// The berth is available only when there are no ships in it
+BERTH( N=1 ) = BER[0],
+BER[v:0..BERTH_MAX] = ( when ( v<BERTH_MAX) let_in -> unloading -> BER[v+1] | when ( v>0 ) let_out -> BER[v-1] )/{ get_tugs_undocking/let_out, goto_berth/let_in}.
 
 // The tugs process holds all requests to get tugs or release tugs before docking and after undocking
 TUGS( N=5 ) = TUG[5],
@@ -35,5 +44,9 @@ DEPART_ZONE( N=0 ) = DEPART[0],
 DEPART[v:WAIT_ZONE_RANGE] = ( when (v< WAIT_ZONE_MAX ) arrive_depart -> DEPART[v+1] | when( v>0 ) ship_leave -> DEPART[v-1])
 /{get/ship_leave,leave_ship/arrive_depart}.  
 
-||SIMULATOR = ( a:PILOT||b:PILOT||{a,b}::TUGS(5)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER ).
-//||SIMULATOR = ( PILOT||TUGS(5)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER).
+||SIMULATOR = 
+( (c[i:1..PIL_NUM]:PILOT)
+||
+( {c[i:1..PIL_NUM]}:: ( TUGS(TUG_NUM)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER||BERTH(0) ) )
+).
+

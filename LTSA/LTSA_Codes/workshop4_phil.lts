@@ -1,9 +1,11 @@
-PHIL = ( tosit -> sitdown -> right.get -> left.get -> eat -> left.put -> right.put -> standup -> afterstandup -> PHIL ).
+const AVAILABLE_MAX = 5
+
+PHIL = (sitdown -> right.get -> left.get -> eat -> left.put -> right.put -> standup -> PHIL ).
 
 FORK = ( get -> put -> FORK ).
 
-BUTLER ( I=4 ) = BUT[I],
-BUT[v: 0..4] = ( when ( v>0 ) tosit -> BUT[v-1] | when (v<4) afterstandup -> BUT[v+1] ).
+BUTLER ( I=AVAILABLE_MAX ) = BUT[I],
+BUT[v: 0..AVAILABLE_MAX ] = ( when ( v>1 ) tosit -> BUT[v-1] | when (v<5) afterstandup -> BUT[v+1] )/{sitdown/tosit,standup/afterstandup}.
 
 ||DINERS( N= 5)
 = 
@@ -11,4 +13,4 @@ BUT[v: 0..4] = ( when ( v>0 ) tosit -> BUT[v-1] | when (v<4) afterstandup -> BUT
 forall [i:0..N-1]
 	( phil[i]:PHIL
 	|| {phil[i].left,phil[((i-1)+N)%N].right }::FORK )
-)|| {phil[1],phil[2],phil[3],phil[4],phil[0]}::BUTLER(4)).
+)|| {phil[i:0..4]}::BUTLER(5)).
