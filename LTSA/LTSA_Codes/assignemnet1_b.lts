@@ -21,17 +21,17 @@ CONSUMER = ( get -> CONSUMER ).
 
 // The shiel process shows how the shield works under the operation of operator, 0 means the shield is deactivated,1 means the shield is activated
 SHIELD( N=0 ) = SHIELD[0],
-SHIELD[v:0..1] = ( when (v==0) activate -> SHIELD[1] | when (v==1) deactivate -> SHIELD[0] )/{activate/docking}. 
+SHIELD[v:0..1] = ( when (v==0) check_shield_off -> SHIELD[0] | when (v==1) deactivate -> SHIELD[0] | when (v==0) activate -> SHIELD[1])/{docking/check_shield_off}. 
 
 // The berth is available only when there are no ships in it
 BERTH( N=1 ) = BER[0],
 BER[v:0..BERTH_MAX] = ( when ( v<BERTH_MAX) let_in -> unloading -> BER[v+1] | when ( v>0 ) let_out -> BER[v-1] )/{ get_tugs_undocking/let_out, goto_berth/let_in}.
 
 // The tugs process holds all requests to get tugs or release tugs before docking and after undocking
-TUGS( N=5 ) = TUG[5],
+TUGS( N=TUG_NUM ) = TUG[TUG_NUM],
 TUG[v:0..TUG_NUM] = ( when ( v>= TUG_DOCKING ) acquire_docking -> TUG[v-TUG_DOCKING] | when( v<= TUG_NUM - TUG_DOCKING) release_docking -> TUG[v+TUG_DOCKING] 
 				|  when ( v>= TUG_UNDOCKING ) acquire_undocking -> TUG[v-TUG_UNDOCKING] | when( v<= TUG_NUM - TUG_UNDOCKING) release_undocking -> TUG[v+TUG_UNDOCKING])
-/{get_tugs_docking/acquire_docking, unload/release_docking, get_tugs_undocking/acquire_undocking, leave_ship/release_undocking}.
+/{get_tugs_docking/acquire_docking, unloading/release_docking, get_tugs_undocking/acquire_undocking, leave_ship/release_undocking}.
 
 // arrive_zone process: only when the number of ships in the zone is less then the MAX value, ships could be in
 //						also it's impossible to depart a ship if there are no ships in the zone
@@ -47,6 +47,6 @@ DEPART[v:WAIT_ZONE_RANGE] = ( when (v< WAIT_ZONE_MAX ) arrive_depart -> DEPART[v
 ||SIMULATOR = 
 ( (c[i:1..PIL_NUM]:PILOT)
 ||
-( {c[i:1..PIL_NUM]}:: ( TUGS(TUG_NUM)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER||BERTH(0) ) )
+( {c[i:1..PIL_NUM]}:: ( TUGS(TUG_NUM)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER||BERTH(0)||SHIELD(0) ) )
 ).
 
