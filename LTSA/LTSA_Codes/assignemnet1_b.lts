@@ -50,3 +50,4 @@ DEPART[v:WAIT_ZONE_RANGE] = ( when (v< WAIT_ZONE_MAX ) arrive_depart -> DEPART[v
 ( {c[i:1..PIL_NUM]}:: ( TUGS(TUG_NUM)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER||BERTH(0)||SHIELD(0) ) )
 ).
 
+

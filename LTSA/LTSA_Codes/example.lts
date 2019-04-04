@@ -1,0 +1,10 @@
+const N = 4
+range T = 0.. N
+VAR = VAR [0] ,
+VAR [u:T ] = ( read [u] -> VAR [u ] | write [ v:T ] -> VAR[ v ]).
+CTR = ( read [ x:T ] ->
+( when (x <N) increment -> write [x +1] -> CTR
+| when ( x == N ) end -> END
+)
+)+{ read[T], write[T] }.
+|| SHAREDCOUNTER = ({a ,b }: CTR || {a ,b }:: VAR ).
