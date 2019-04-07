@@ -1,0 +1,73 @@
+/*
+ This is the modified version of space model
+
+Student: Bowen Bai
+Student number: 969899
+
+*/
+
+/*
+constant properties for pilot numer, tug number, required tugs for docking, undocking 
+and the maximum space of wait zones.
+*/
+const PIL_NUM = 4
+const TUG_NUM = 6
+const TUG_DOCKING = 3
+const TUG_UNDOCKING = 2
+const WAIT_ZONE_MAX = 1
+const BERTH_MAX = 1
+
+range WAIT_ZONE_RANGE = 0..WAIT_ZONE_MAX
+
+// The pilot process
+PILOT = ( get_ship -> travel -> get_tugs_docking -> docking 
+		-> goto_berth -> get_tugs_undocking -> undocking -> travel -> leave_ship -> PILOT ).
+
+// The producer and consumer process, actions put and get mean the a new ship arrives or departure
+PRODUCER = ( put -> PRODUCER ).
+CONSUMER = ( get -> CONSUMER ).
+
+// The shiel process shows how the shield works under the operation of operator, 0 means the shield is deactivated,1 means the shield is activated
+SHIELD( N=0 ) = SHIELD[0],
+SHIELD[v:0..1] = ( when (v==0) check_shield_off -> SHIELD[0] | when (v==1) deactivate -> SHIELD[0] | when (v==0) activate -> SHIELD[1])/{goto_berth/check_shield_off}. 
+
+// The berth is available only when there are no ships in it
+BERTH( N=1 ) = BER[0],
+BER[v:0..BERTH_MAX] = ( when ( v<BERTH_MAX) let_in -> unloading -> BER[v+1] | when ( v>0 ) let_out -> BER[v-1] )/{ get_tugs_undocking/let_out, goto_berth/let_in}.
+
+// The tugs process holds all requests to get tugs or release tugs before docking and after undocking
+// When a ship is trying to acquire tugs for docking, the system will check the available tugs, if the number is less than tug_docking+ tug_undocking, the require
+// will be rejected cause this could cause the problem if one ship is requiring tugs for undocking which will then cause a deadlock
+TUGS( N=TUG_NUM ) = TUG[TUG_NUM],
+TUG[v:0..TUG_NUM] = ( when ( v>= (TUG_DOCKING+TUG_UNDOCKING) ) acquire_docking -> TUG[v-TUG_DOCKING] | when( v<= TUG_NUM - TUG_DOCKING) release_docking -> TUG[v+TUG_DOCKING] 
+				|  when ( v>= TUG_UNDOCKING ) acquire_undocking -> TUG[v-TUG_UNDOCKING] | when( v<= TUG_NUM - TUG_UNDOCKING) release_undocking -> TUG[v+TUG_UNDOCKING])
+/{get_tugs_docking/acquire_docking, unloading/release_docking, get_tugs_undocking/acquire_undocking, leave_ship/release_undocking}.
+
+// arrive_zone process: only when the number of ships in the zone is less then the MAX value, ships could be in
+//						also it's impossible to depart a ship if there are no ships in the zone
+// depart_zone use the same method to handle arrive and depart request
+ARRIVE_ZONE( N=0 ) = ARRIVE[0],
+ARRIVE[v:WAIT_ZONE_RANGE] = ( when ( v< WAIT_ZONE_MAX ) arrive_arrive -> ARRIVE[v+1] | when( v>0 ) ship_leave -> ARRIVE[v-1])
+/{put/arrive_arrive,get_ship/ship_leave}.
+
+DEPART_ZONE( N=0 ) = DEPART[0],
+DEPART[v:WAIT_ZONE_RANGE] = ( when (v< WAIT_ZONE_MAX ) arrive_depart -> DEPART[v+1] | when( v>0 ) ship_leave -> DEPART[v-1])
+/{get/ship_leave,leave_ship/arrive_depart}.  
+
+// liveless property
+// this liveless property is used to confirm that the pilots are always able to operate the space ships finsh those processes and then let them departuer
+progress PILOT_RUNNING = { c[i:1..PIL_NUM].leave_ship }
+
+// safety property
+// safety properties in this simulator are used to confirm that there are no mutex and deadlocks in TUGS, BERTH and WAITZONE.
+property BERTH_MUTEX = ( c[i:1..PIL_NUM].let_in -> c[i].unloading -> c[i].let_out -> BERTH_MUTEX).
+property ARRIVEZONE_MUTEX = ( c[i:1..PIL_NUM].arrive_arrive -> c[i].get_ship -> c[i].arrive_depart -> c[i].get -> BERTH_MUTEX).
+property TUG_MUTEX = ( c[i:1..PIL_NUM].acquire_docking -> c[i:1..PIL_NUM].release_docking -> c[i:1..PIL_NUM].acquire_undocking -> c[i:1..PIL_NUM].release_undocking -> TUG_MUTEX ).
+
+||SIMULATOR = 
+( (c[i:1..PIL_NUM]:PILOT)
+||
+( {c[i:1..PIL_NUM]}:: ( TUGS(TUG_NUM)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER||BERTH(0)||SHIELD(0) ) )
+).
+
+
