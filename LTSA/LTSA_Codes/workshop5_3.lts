@@ -1,0 +1,19 @@
+const MAX = 5
+range T = 0..MAX
+
+CONSOLE = CONSOLE[0],
+CONSOLE[v:T] = ( read[v]->CONSOLE[v] | write[i:T] -> CONSOLE[i] ).
+
+PROCESS = ( acquire -> 
+			(read[v:T] -> release -> PROCESS
+			| write[v:T] -> release -> PROCESS)
+		   ).
+
+SEMAPHORE(N = 0) = SEMA[N],
+SEMA[v:0..1] = ( when(v==0) acquire -> SEMA[v+1]
+				|when(v==1) release -> SEMA[v-1]).
+
+||OS = ( 
+		{user,system}:PROCESS 
+		|| {user,system}::(SEMAPHORE(0)||CONSOLE) 
+		).

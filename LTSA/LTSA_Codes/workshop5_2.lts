@@ -1,0 +1,20 @@
+const MAX_PASSENGER = 10
+range T = 0..MAX_PASSENGER
+range R = 0..MAX_PASSENGER+1
+
+
+LIFTv2( N= 0 ) = LIFT[N],
+LIFT[v:T] = ( when( v< MAX_PASSENGER ) enter-> LIFT[v+1] 
+			| when( v>0 ) exit -> LIFT[v-1] ).
+
+LIFTv1( N= 0 ) = LIFT[N],
+LIFT[v:R] = ( when( v<= MAX_PASSENGER ) enter-> LIFT[v+1]
+			| when( v>0 ) exit -> LIFT[v-1] ).
+
+property SAFE_LIFT( N=0 ) = SAFE[N],
+SAFE[v:T] = ( enter-> SAFE[v+1] 
+			| exit -> SAFE[v-1]
+			| when(v==10) exit -> SAFE[MAX_PASSENGER-1] ).
+
+
+||LIFTCTR = (LIFTv2(0) || SAFE_LIFT(0) ).
