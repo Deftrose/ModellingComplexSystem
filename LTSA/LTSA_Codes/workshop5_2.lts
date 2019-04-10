@@ -12,9 +12,8 @@ LIFT[v:R] = ( when( v<= MAX_PASSENGER ) enter-> LIFT[v+1]
 			| when( v>0 ) exit -> LIFT[v-1] ).
 
 property SAFE_LIFT( N=0 ) = SAFE[N],
-SAFE[v:T] = ( enter-> SAFE[v+1] 
-			| exit -> SAFE[v-1]
-			| when(v==10) exit -> SAFE[MAX_PASSENGER-1] ).
+SAFE[v:T] = ( when( v< MAX_PASSENGER ) enter-> SAFE[v+1] 
+			| when( v>0 ) exit -> SAFE[v-1] ).
 
 
 ||LIFTCTR = (LIFTv2(0) || SAFE_LIFT(0) ).

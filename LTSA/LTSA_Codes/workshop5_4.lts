@@ -27,7 +27,8 @@ N2 = ( flag2.setTrue -> flag1.check[v:Bool] ->
 property SAFE_FIELD = ( n1_enter -> n1_leave -> SAFE_FIELD  
 						| n2_enter -> n2_leave -> SAFE_FIELD 
 					  ).
-
+progress N1 = { n1_enter }
+progress N2 = { n2_enter }
 
 ||FLAGS = (flag1:BOOLVAR
 		 || flag2:BOOLVAR
