@@ -7,7 +7,7 @@ constant properties for pilot numer, tug number, required tugs for docking, undo
 and the maximum space of wait zones.
 */
 const PIL_NUM = 2
-const TUG_NUM = 4
+const TUG_NUM = 5
 const TUG_DOCKING = 3
 const TUG_UNDOCKING = 2
 const WAIT_ZONE_MAX = 1
@@ -31,7 +31,7 @@ SHIELD[v:0..1] = ( when (v==0) check_shield_off -> SHIELD[0] | when (v==1) deact
 BERTH( N=1 ) = BER[0],
 BER[v:0..BERTH_MAX] = ( when ( v<BERTH_MAX) let_in -> unloading -> BER[v+1] | when ( v>0 ) let_out -> BER[v-1] )/{ get_tugs_undocking/let_out, goto_berth/let_in}.
 
-// The tugs process holds all requests to get tugs or release tugs before docking and after undocking
+// The tugs process handles all requests to get tugs or release tugs before docking and after undocking
 TUGS( N=TUG_NUM ) = TUG[TUG_NUM],
 TUG[v:0..TUG_NUM] = ( when ( v>= TUG_DOCKING ) acquire_docking -> TUG[v-TUG_DOCKING] | when( v<= TUG_NUM - TUG_DOCKING) release_docking -> TUG[v+TUG_DOCKING] 
 				|  when ( v>= TUG_UNDOCKING ) acquire_undocking -> TUG[v-TUG_UNDOCKING] | when( v<= TUG_NUM - TUG_UNDOCKING) release_undocking -> TUG[v+TUG_UNDOCKING])
@@ -51,17 +51,43 @@ DEPART[v:WAIT_ZONE_RANGE] = ( when (v< WAIT_ZONE_MAX ) arrive_depart -> DEPART[v
 // liveless property
 // this liveless property is used to confirm that the pilots are always able to operate the space ships finsh those processes and then let them departuer
 progress PILOT_RUNNING = { c[i:1..PIL_NUM].leave_ship }
+progress PILOT_UNLOADING = { c[i:1..PIL_NUM].unloading }
 
 // safety property
 // safety properties in this simulator are used to confirm that there are no mutex and deadlocks in TUGS, BERTH and WAITZONE.
-property BERTH_MUTEX = ( c[i:1..PIL_NUM].let_in -> c[i].unloading -> c[i].let_out -> BERTH_MUTEX).
-property ARRIVEZONE_MUTEX = ( c[i:1..PIL_NUM].arrive_arrive -> c[i].get_ship -> c[i].arrive_depart -> c[i].get -> BERTH_MUTEX).
-property TUG_MUTEX = ( c[i:1..PIL_NUM].acquire_docking -> c[i:1..PIL_NUM].release_docking -> c[i:1..PIL_NUM].acquire_undocking -> c[i:1..PIL_NUM].release_undocking -> TUG_MUTEX ).
+// SAFE_BERTH is used to confirm that no more than BERHT_MAX ships could entry the berth at a same time
+property SAFE_BERTH = SAFE_BERTH[0],
+		SAFE_BERTH[v:0..BERTH_MAX] = ( 
+						 when( v<BERTH_MAX ) c[i:1..PIL_NUM].goto_berth ->  SAFE_BERTH[v+1]
+						|when ( v > 0 ) c[i:1..PIL_NUM].get_tugs_undocking -> SAFE_BERTH[v-1] ).
+
+// SAFE_ARRIVEZONE is used to confirm that no more than WAIT_ZONE_MAX ships could be in the zone at a same time
+property SAFE_ARRIVEZONE = SAFE_ARRIVEZONE[0],
+		SAFE_ARRIVEZONE[v:0..WAIT_ZONE_MAX] = (
+												 when( v<WAIT_ZONE_MAX ) c[i:1..PIL_NUM].put -> SAFE_ARRIVEZONE[v+1]
+												|when( v>0 ) c[i:1..PIL_NUM].get_ship -> SAFE_ARRIVEZONE[v-1] ).
+property SAFE_DEPARTZONE = SAFE_DEPARTZONE[0],
+		SAFE_DEPARTZONE[v:0..WAIT_ZONE_MAX] = (
+												 when( v<WAIT_ZONE_MAX ) c[i:1..PIL_NUM].leave_ship -> SAFE_DEPARTZONE[v+1]
+												|when( v>0 ) c[i:1..PIL_NUM].get -> SAFE_DEPARTZONE[v-1] ).
+
+// SAFE_TUG is used to confirm that there are no deadlocks in tugs
+property SAFE_TUG = SAFE_TUG[TUG_NUM],
+		SAFE_TUG[v:0..TUG_NUM] = (
+									 when( v>= TUG_DOCKING ) c[i:1..PIL_NUM].get_tugs_docking -> SAFE_TUG[v-TUG_DOCKING]
+									|when( v>= TUG_UNDOCKING ) c[i:1..PIL_NUM].get_tugs_undocking -> SAFE_TUG[v-TUG_UNDOCKING]
+									|when( v<= TUG_NUM - TUG_DOCKING) c[i:1..PIL_NUM].unloading -> SAFE_TUG[v+TUG_DOCKING]
+									|when( v<= TUG_NUM -TUG_UNDOCKING) c[i:1..PIL_NUM].leave_ship -> SAFE_TUG[v+TUG_UNDOCKING] ).
+
 
 ||SIMULATOR = 
-( (c[i:1..PIL_NUM]:PILOT)
+( 
+(c[i:1..PIL_NUM]:PILOT)
 ||
 ( {c[i:1..PIL_NUM]}:: ( TUGS(TUG_NUM)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER||BERTH(0)||SHIELD(0) ) )
 ).
+
+||SAFE_SIMULATOR =
+( SIMULATOR || SAFE_BERTH || SAFE_ARRIVEZONE || SAFE_DEPARTZONE || SAFE_TUG ).
 
 
