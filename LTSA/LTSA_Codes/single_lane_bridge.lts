@@ -43,6 +43,6 @@ C[i:ID]
 fluent RED_ENTER[i:ID] = < { red[i].enter },{ red[i].exit } >
 fluent BLUE_ENTER[i:ID] = < { blue[i].enter },{ blue[i].exit } >
 
-assert MUST_ENTER = [] ( <> forall[i:ID] RED_ENTER[i]  && <> forall[i:ID] BLUE_ENTER[i] )
+assert MUST_ENTER = [] forall[i:ID] <>RED_ENTER[i] 
 assert RED_MUST_LEAVE = [] ( forall[i:ID] ( red[i].enter -> <>red[i].exit) )
-assert SAFE_BRIDGE = []! ( exists[i:ID][v:ID] ( red[i].enter && blue[i].enter ) )
+assert SAFE_BRIDGE = []! ( exists[i:ID][v:ID] ( RED_ENTER[i] && BLUE_ENTER[v] ) )

@@ -8,8 +8,8 @@ fluent B_GET_RESOURCE = < {b.acquire},{b.release} > initially 0
 
 assert BOTH_ACQUIRE = [](<>A_GET_RESOURCE && <>B_GET_RESOURCE )
 
-assert A_MUST_EXIT = []( a.acquire -> <>a.release )
+assert A_MUST_EXIT = [](( a.acquire -> <>a.release )&&(b.acquire -> <>b.release ))
 
-assert RELEASE_UNTIL_ACQUIRE = [](<>(A_GET_RESOURCE U B_GET_RESOURCE )|| <>(B_GET_RESOURCE U A_GET_RESOURCE))
+assert RELEASE_UNTIL_ACQUIRE = [](<>(A_GET_RESOURCE U B_GET_RESOURCE )&& <>(B_GET_RESOURCE U A_GET_RESOURCE))
 
 ||RESOURCE_SHARE = (a:USER || b:USER || {a,b}::RESOURCE).
