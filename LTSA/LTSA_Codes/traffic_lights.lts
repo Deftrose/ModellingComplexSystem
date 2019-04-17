@@ -1,0 +1,10 @@
+TL 
+  = ([1].red -> TL[0]),
+TL[i:0..1] 
+  = ([i].green -> [i].yellow -> [i].red -> TL[(i+1)%2]).
+
+fluent CAN_GO[i:0..1] = <{[i].green, [i].yellow}, [i].red> 
+
+assert SAFE 
+  = []!(CAN_GO[0] && CAN_GO[1])
+

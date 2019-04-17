@@ -1,0 +1,48 @@
+/** From Ch 14: "Concurrency: State Models and Java Programs"
+ *             Jeff Magee and Jeff Kramer
+ */
+
+/** Single Lane bridge
+ *  - Red cars go from west to east
+ *  - Blue cars go from east to west
+ */
+
+const N  = 2    // number car types
+range T  = 0..N // car count
+range ID = 1..N // car identities
+
+BRIDGE 
+  = BRIDGE[0][0],   // initially empty
+BRIDGE[r:T][b:T]    // r is the red count, b the blue count
+  = ( when (b==0) red[ID].enter  -> BRIDGE[r+1][b]
+    |             red[ID].exit   -> BRIDGE[r-1][b]
+    | when (r==0) blue[ID].enter -> BRIDGE[r][b+1]
+    |             blue[ID].exit  -> BRIDGE[r][b-1]
+    ).
+
+CAR 
+  = (enter -> exit -> CAR).
+
+/* cars may not overtake each other */
+NOPASS1  
+  = C[1],
+C[i:ID]  
+  = ([i].enter -> C[i%N+1]).
+
+NOPASS2  
+  = C[1],
+C[i:ID]  
+  = ([i].exit -> C[i%N+1]).
+
+||CONVOY = ([ID]:CAR || NOPASS1 || NOPASS2).
+
+||CARS = (red:CONVOY || blue:CONVOY).
+
+||SingleLaneBridge = (CARS || BRIDGE).
+
+fluent RED_ENTER[i:ID] = < { red[i].enter },{ red[i].exit } >
+fluent BLUE_ENTER[i:ID] = < { blue[i].enter },{ blue[i].exit } >
+
+assert MUST_ENTER = [] ( <> forall[i:ID] RED_ENTER[i]  && <> forall[i:ID] BLUE_ENTER[i] )
+assert RED_MUST_LEAVE = [] ( forall[i:ID] ( red[i].enter -> <>red[i].exit) )
+assert SAFE_BRIDGE = []! ( exists[i:ID][v:ID] ( red[i].enter && blue[i].enter ) )
