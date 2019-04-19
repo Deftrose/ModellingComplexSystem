@@ -27,6 +27,9 @@ CONSUMER = ( get -> CONSUMER ).
 SHIELD( N=0 ) = SHIELD[0],
 SHIELD[v:0..1] = ( when (v==0) check_shield_off -> SHIELD[0] | when (v==1) deactivate -> SHIELD[0] | when (v==0) activate -> SHIELD[1])/{goto_berth/check_shield_off}. 
 
+// The operator is employed to control the switch of the shield
+OPERATOR = ( activate -> OPERATOR | deactivate -> OPERATOR ).
+
 // The berth is available only when there are no ships in it
 BERTH( N=1 ) = BER[0],
 BER[v:0..BERTH_MAX] = ( when ( v<BERTH_MAX) let_in -> unloading -> BER[v+1] | when ( v>0 ) let_out -> BER[v-1] )/{ get_tugs_undocking/let_out, goto_berth/let_in}.
@@ -84,7 +87,7 @@ property SAFE_TUG = SAFE_TUG[TUG_NUM],
 ( 
 (c[i:1..PIL_NUM]:PILOT)
 ||
-( {c[i:1..PIL_NUM]}:: ( TUGS(TUG_NUM)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER||BERTH(0)||SHIELD(0) ) )
+( {c[i:1..PIL_NUM]}:: ( TUGS(TUG_NUM)||ARRIVE_ZONE(0)||DEPART_ZONE(0)||PRODUCER||CONSUMER||BERTH(0)||SHIELD(0)||OPERATOR ) )
 ).
 
 ||SAFE_SIMULATOR =
