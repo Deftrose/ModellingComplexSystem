@@ -1,0 +1,22 @@
+const N = 5
+range T = 0..N
+const U = 5
+
+RESOURCE_ALLOC(I = N) = RESOURCE_ALLOC[I],
+
+RESOURCE_ALLOC[n: T] = (when(n>0) get[i:1..n] -> RESOURCE_ALLOC[n - i] |
+						when(N-n > 0) put[i:1..(N-n)] -> RESOURCE_ALLOC[n + i]).
+
+RESOURCE_USER = ( get[i:1..N] -> use[i] -> put[i] -> RESOURCE_USER).
+
+fluent GET_RESOURCE[i:1..U] = <{use[i]},{get[i],put[i]}>
+
+assert ALL_GET = forall[i:1..U]<>u[i].use
+
+property SAFE = (u[t:1..U].get[i:1..N] -> u[t].use[i] -> SAFE).
+
+progress USE = {u[t:1..U].use[i:1..N]}
+
+||SYSTEM = (u[t:1..U]:RESOURCE_USER || u[t:1..U]::RESOURCE_ALLOC ).
+
+||SAFE_SYSTEM = (SYSTEM || SAFE).
