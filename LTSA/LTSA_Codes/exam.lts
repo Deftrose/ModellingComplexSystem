@@ -13,10 +13,6 @@ fluent GET_RESOURCE[i:1..U] = <{use[i]},{get[i],put[i]}>
 
 assert ALL_GET = forall[i:1..U]<>u[i].use
 
-property SAFE = (u[t:1..U].get[i:1..N] -> u[t].use[i] -> SAFE).
-
-progress USE = {u[t:1..U].use[i:1..N]}
-
 ||SYSTEM = (u[t:1..U]:RESOURCE_USER || u[t:1..U]::RESOURCE_ALLOC ).
 
 ||SAFE_SYSTEM = (SYSTEM || SAFE).
